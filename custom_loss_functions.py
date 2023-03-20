@@ -2,10 +2,7 @@
 """File containing losses for neural networks."""
 
 from typing import Any
-
 import tensorflow as tf
-import tensorflow_probability as tfp
-
 from keras import backend
 
 def correlation_coefficient_loss(y_true: tf.Tensor, y_predicted: tf.Tensor) -> tf.Tensor:
@@ -51,7 +48,7 @@ def inverse_correlation_coefficient_loss(y_true: tf.Tensor, y_predicted: tf.Tens
 
     Returns
     ---------
-    One minuse correlation squared (range between 0 and 1) as TensorFlow tensor.
+    One minus correlation squared (range between 0 and 1) as TensorFlow tensor.
     """
     mean_y_true = backend.mean(y_true)
     mean_y_predicted  = backend.mean(y_predicted)
@@ -68,36 +65,3 @@ def inverse_correlation_coefficient_loss(y_true: tf.Tensor, y_predicted: tf.Tens
 
     return 1 - backend.square(correlation_coefficient)
 
-def correlation_loss(y_true: Any, y_pred: Any) -> tf.Tensor:
-    """Pearson correlation squared between two batches.
-
-    Arguments
-    ---------
-    y_true : Any
-    Taget values of the used network.
-
-    y_predicted : Any
-    Predictions made by the used model.
-
-    Returns
-    ---------
-    Correlation squared (range between 0 and 1) as TensorFlow tensor.
-    """
-    return backend.square(tfp.stats.correlation(y_true, y_pred))
-
-def inverse_correlation_loss(y_true: Any, y_pred: Any) -> tf.Tensor:
-    """Pearson correlation squared between two batches.
-
-    Arguments
-    ---------
-    y_true : Any
-    Taget values of the used network.
-
-    y_predicted : Any
-    Predictions made by the used model.
-
-    Returns
-    ---------
-    One minus correlation squared (range between 0 and 1) as TensorFlow tensor.
-    """
-    return 1 - backend.square(tfp.stats.correlation(y_true, y_pred))
