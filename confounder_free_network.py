@@ -57,14 +57,16 @@ class ConfounderFreeNetwork():
         Number of neurons in the hidden layers of the predictor network.
         """
         # Building of the subnewtworks
-        self.extractor = build_extractor(input_dim, extractor_neurons,
-                                         extractor_layers)
+        self.extractor = build_extractor(input_dim, extractor_layers,
+                                         extractor_neurons)
 
-        self.classificator = build_classificator(input_dim, classificator_neurons,
-                                                 classificator_layers, classificator_output_dim)
+        self.classificator = build_classificator(input_dim, classificator_layers,
+                                                 classificator_neurons,
+                                                 classificator_output_dim)
 
-        self.regressor = build_regressor(input_dim, regressor_neurons,
-                                                 regressor_layers, regressor_output_dim)
+        self.regressor = build_regressor(input_dim, regressor_layers, 
+                                         regressor_neurons,
+                                         regressor_output_dim)
 
         # Definition of the submodels
         self.classification_network = Sequential()
@@ -133,8 +135,6 @@ class ConfounderFreeNetwork():
         train_confounders = train_data[:, confound_indeces]
         validation_confounders = validation_data[:, confound_indeces]
         test_confounders = test_data[:, confound_indeces]
-
-        print(train_confounders[1:10])
 
         # Definition of the batches
         train_batches = np.array_split(train_set, batches_number)
