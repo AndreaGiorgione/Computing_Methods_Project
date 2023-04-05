@@ -4,12 +4,16 @@ machine learning application.'''
 
 from pathlib import Path
 
+import time
 import argparse
 import numpy as np
 import pandas as pd
 
 from keras.models import Sequential
 from keras.optimizers import Adam
+from keras import backend
+
+from sklearn.model_selection import KFold
 
 from subnetworks import build_classificator, build_extractor, build_regressor
 from custom_loss_functions import correlation_coefficient_loss
@@ -93,10 +97,9 @@ class ConfounderFreeNetwork():
             self.resgression_network.summary()
             self.extraction_network.summary()
 
-    def train(self, dataset: np.ndarray, epochs: int, batch_size: int,
-              validation_fraction: float, test_fraction: float,
-              labels_indeces: int, confound_indeces: int,
-              test=False, verbose=False):
+    def train(self, train_data: np.ndarray, validation_data: np.ndarray,
+              epochs: int, batch_size: int, labels_indeces: int,
+              confound_indeces: int, verbose=False):
         """Method for the training of the model.
 
         Arguments
@@ -115,26 +118,17 @@ class ConfounderFreeNetwork():
         """
 
         # Number of batches
-        batches_number = int(dataset.shape[0] / batch_size)
+        batches_number = int(train_data.shape[0] / batch_size)
 
-        # Splitting of the dataset
-        developement_data = dataset[:int(len(dataset)*(1-test_fraction)), :]
-        test_data = dataset[int(len(dataset)*test_fraction):, :]
-
-        train_data = developement_data[:int(len(dataset)*(1-validation_fraction)), :]
-        validation_data = developement_data[int(len(dataset)*validation_fraction):, :]
-
+        # Splitting of the data
         train_set = train_data[:, 0:labels_indeces[0]]
         validation_set = validation_data[:, 0:labels_indeces[0]]
-        test_set = test_data[:, 0:labels_indeces[0]]
 
         train_labels = train_data[:, labels_indeces]
         validation_labels = validation_data[:, labels_indeces]
-        test_labels = test_data[:, labels_indeces]
 
         train_confounders = train_data[:, confound_indeces]
         validation_confounders = validation_data[:, confound_indeces]
-        test_confounders = test_data[:, confound_indeces]
 
         # Definition of the batches
         train_batches = np.array_split(train_set, batches_number)
@@ -180,18 +174,32 @@ class ConfounderFreeNetwork():
                                                                         verbose=0)
 
             # Show results
-            print(f'Epoch {epoch+1} of {epochs}: {class_train_results}, {class_validation_results}')
-            if verbose:
-                print(f'                   {pred_train_results}, {pred_validation_results}')
+            if (epoch+1) % 50 == 0:
+                print(f'Epoch {epoch+1} of {epochs}: {class_train_results}, {class_validation_results}')
+                if verbose:
+                    print(f'                   {pred_train_results}, {pred_validation_results}')
+
+    def assesment(self, test_data, labels_indeces: int, confound_indeces: int):
+        """Method for the model assesment on test set.
         
-        if test:
-            class_test_results = self.classification_network.evaluate(test_set,
-                                                                      test_labels,
-                                                                      verbose=0)
-            pred_test_results = self.resgression_network.evaluate(test_set,
-                                                                  test_confounders,
+        Arguments
+        ---------
+        test_set : np.array
+        Test set for the evalutaion phase.
+        """
+
+        test_set = test_data[:, 0:labels_indeces[0]]
+        test_labels = test_data[:, labels_indeces]
+        test_confounders = test_data[:, confound_indeces]
+
+        class_test_results = self.classification_network.evaluate(test_set,
+                                                                  test_labels,
                                                                   verbose=0)
-            print(f'Final assesment on test: {class_test_results}, {pred_test_results}')
+        pred_test_results = self.resgression_network.evaluate(test_set,
+                                                              test_confounders,
+                                                              verbose=0)
+        
+        print(f'Final assesment on test: {class_test_results}, {pred_test_results}')
 
 if __name__ == "__main__":
 
@@ -250,16 +258,50 @@ if __name__ == "__main__":
     # Changing the -1 labels with 0 dor the binary crossentropy usage
     data[data == -1] = 0
 
+    # Splitting the dataset
+    developement_data = data[:int(len(data)*(1-args.t)), :]
+    test_data = data[int(len(data)*(1-args.t)):, :]
+
+    '''
+    train_data = developement_data[:int(len(developement_data)*(1-args.v)), :]
+    validation_data = developement_data[int(len(developement_data)*(1-args.v)):, :]
+
     # Prepare the model
     model = ConfounderFreeNetwork(input_dim=(data.shape[1]-args.co), extractor_layers=args.el,
                                   classificator_layers=args.cl, regressor_layers=args.rl,
                                   extractor_neurons=args.en, classificator_neurons=args.cn,
                                   regressor_neurons=args.rn, classificator_output_dim=args.co,
                                   regressor_output_dim=args.ro, learning_rate=args.lr,
-                                  verbose=args.v)
+                                  verbose=args.vr)
 
     # Train model
-    model.train(dataset=data, epochs=args.e, batch_size=args.b,
-                validation_fraction=args.v, test_fraction=args.t,
-                labels_indeces=args.l, confound_indeces=args.c,
-                test=args.ts, verbose=args.v)
+    model.train(train_data=train_data, validation_data=validation_data,
+                epochs=args.e, batch_size=args.b, labels_indeces=args.l,
+                confound_indeces=args.c, verbose=args.vr)
+    '''
+
+    start = time.time()
+
+    # K-Fold cross validation
+    folds_number = 6
+    kf = KFold(n_splits=folds_number, shuffle=False)
+    for fold, (train_index, validation_index) in enumerate(kf.split(developement_data)):
+        print(train_index)
+        print(validation_index)
+        print(f'Fold {fold+1} of {folds_number}')
+
+        model.train(train_data=developement_data[train_index],
+                    validation_data=developement_data[validation_index],
+                    epochs=args.e, batch_size=args.b, labels_indeces=args.l,
+                    confound_indeces=args.c, verbose=args.vr)
+        
+        model = ConfounderFreeNetwork(input_dim=(data.shape[1]-args.co), extractor_layers=args.el,
+                                  classificator_layers=args.cl, regressor_layers=args.rl,
+                                  extractor_neurons=args.en, classificator_neurons=args.cn,
+                                  regressor_neurons=args.rn, classificator_output_dim=args.co,
+                                  regressor_output_dim=args.ro, learning_rate=args.lr,
+                                  verbose=args.vr)
+                                  
+        
+    end = time.time()
+    print(f'Total time: {round((end - start) / 60)} minutes.')
