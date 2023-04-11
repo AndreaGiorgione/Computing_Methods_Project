@@ -11,7 +11,7 @@ import pandas as pd
 
 from keras.models import Sequential
 from keras.optimizers import Adam
-from keras import backend
+from keras.metrics import AUC
 
 from sklearn.model_selection import KFold
 
@@ -77,20 +77,20 @@ class ConfounderFreeNetwork():
         self.classification_network.add(self.extractor) # Trainable
         self.classification_network.add(self.classificator) # Trainable
         self.classification_network.compile(loss='binary_crossentropy',
-                                            optimizer=Adam(learning_rate=learning_rate),
-                                            metrics=['accuracy'])
+                                            optimizer=Adam(),
+                                            metrics=AUC())
 
         self.resgression_network = Sequential()
         self.resgression_network.add(self.extractor) # Non-Trainable
         self.resgression_network.add(self.regressor) # Trainable
         self.resgression_network.compile(loss='mse',
-                                        optimizer=Adam(learning_rate=learning_rate))
+                                        optimizer=Adam())
 
         self.extraction_network = Sequential()
         self.extraction_network.add(self.extractor) # Trainable
         self.extraction_network.add(self.regressor) # Non-Trainable
         self.extraction_network.compile(loss=correlation_coefficient_loss,
-                                        optimizer=Adam(learning_rate=learning_rate))
+                                        optimizer=Adam())
 
         if verbose:
             self.classification_network.summary()
@@ -174,7 +174,7 @@ class ConfounderFreeNetwork():
                                                                         verbose=0)
 
             # Show results
-            if (epoch+1) % 50 == 0:
+            if (epoch+1) % 1 == 0:
                 print(f'Epoch {epoch+1} of {epochs}: {class_train_results}, {class_validation_results}')
                 if verbose:
                     print(f'                   {pred_train_results}, {pred_validation_results}')
@@ -262,7 +262,6 @@ if __name__ == "__main__":
     developement_data = data[:int(len(data)*(1-args.t)), :]
     test_data = data[int(len(data)*(1-args.t)):, :]
 
-    '''
     train_data = developement_data[:int(len(developement_data)*(1-args.v)), :]
     validation_data = developement_data[int(len(developement_data)*(1-args.v)):, :]
 
@@ -278,30 +277,27 @@ if __name__ == "__main__":
     model.train(train_data=train_data, validation_data=validation_data,
                 epochs=args.e, batch_size=args.b, labels_indeces=args.l,
                 confound_indeces=args.c, verbose=args.vr)
-    '''
+
 
     start = time.time()
 
     # K-Fold cross validation
-    folds_number = 6
+    folds_number = 4
     kf = KFold(n_splits=folds_number, shuffle=False)
     for fold, (train_index, validation_index) in enumerate(kf.split(developement_data)):
-        print(train_index)
-        print(validation_index)
         print(f'Fold {fold+1} of {folds_number}')
 
-        model.train(train_data=developement_data[train_index],
-                    validation_data=developement_data[validation_index],
-                    epochs=args.e, batch_size=args.b, labels_indeces=args.l,
-                    confound_indeces=args.c, verbose=args.vr)
-        
         model = ConfounderFreeNetwork(input_dim=(data.shape[1]-args.co), extractor_layers=args.el,
                                   classificator_layers=args.cl, regressor_layers=args.rl,
                                   extractor_neurons=args.en, classificator_neurons=args.cn,
                                   regressor_neurons=args.rn, classificator_output_dim=args.co,
                                   regressor_output_dim=args.ro, learning_rate=args.lr,
                                   verbose=args.vr)
-                                  
         
+        model.train(train_data=developement_data[train_index],
+                    validation_data=developement_data[validation_index],
+                    epochs=args.e, batch_size=args.b, labels_indeces=args.l,
+                    confound_indeces=args.c, verbose=args.vr)
+
     end = time.time()
     print(f'Total time: {round((end - start) / 60)} minutes.')
