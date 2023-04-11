@@ -7,12 +7,15 @@ from pathlib import Path
 import argparse
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from keras.models import Sequential
 from keras.optimizers import Adam
 from keras.metrics import AUC
 
 from sklearn.model_selection import KFold
+
+from statistics import mean
 
 from confounder_free_network import build_extractor, build_classificator
 
@@ -96,11 +99,33 @@ if __name__ == "__main__":
                                        metrics=AUC())
 
         # Training
-        classification_network.fit(x=train_set[train_index],
+        history = classification_network.fit(x=train_set[train_index],
                                    y=train_labels[train_index],
                                    validation_data=[train_set[validation_index],
                                                 train_labels[validation_index]],
                                    epochs=args.e, batch_size=args.b)
+        
+        print(list(history.history.keys())[1])
+        print(list(history.history.keys())[3])
+        train_results = history.history[list(history.history.keys())[1]]
+        validation_results = history.history[list(history.history.keys())[3]]
+
+        # Showing preformances
+        print(f'Train AUC max and mean: {max(train_results)}, {mean(train_results)}')
+        print(f'Validation AUC max and mean: {max(validation_results)}, {mean(validation_results)}')
+
+        plt.plot(np.linspace(1, args.e, args.e),
+                 train_results, color='blue',
+                 label='Train AUC')
+        plt.plot(np.linspace(1, args.e, args.e),
+                 validation_results, color='red',
+                 label='Validation AUC')
+        plt.xlabel('Epochs')
+        plt.ylabel('AUC')
+        plt.title('Learning curves')
+        plt.legend(loc='lower right')
+        plt.show()
+
 
     # If required show the test results
     if args.ts:

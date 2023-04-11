@@ -8,12 +8,15 @@ import time
 import argparse
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 from keras.models import Sequential
 from keras.optimizers import Adam
 from keras.metrics import AUC
 
 from sklearn.model_selection import KFold
+
+from statistics import mean
 
 from subnetworks import build_classificator, build_extractor, build_regressor
 from custom_loss_functions import correlation_coefficient_loss
@@ -157,6 +160,9 @@ class ConfounderFreeNetwork():
                                         validation_data=[validation_set, validation_labels],
                                         epochs=int(epochs / 5), batch_size=batch_size)
 
+        train_results = []
+        validation_results = []
+
         # Training of each model for the selected number of epoch
         for epoch in range(epochs):
 
@@ -189,12 +195,31 @@ class ConfounderFreeNetwork():
             pred_validation_results = self.resgression_network.evaluate(validation_set,
                                                                         validation_confounders,
                                                                         verbose=0)
+            
+            train_results.append(class_train_results[1])
+            validation_results.append(class_validation_results[1])
 
             # Show results
             if (epoch+1) % 1 == 0:
                 print(f'Epoch {epoch+1} of {epochs}: {class_train_results}, {class_validation_results}')
                 if verbose:
                     print(f'                   {pred_train_results}, {pred_validation_results}')
+
+        # Showing preformances
+        print(f'Train AUC max and mean: {max(train_results)}, {mean(train_results)}')
+        print(f'Validation AUC max and mean: {max(validation_results)}, {mean(validation_results)}')
+
+        plt.plot(np.linspace(1, epochs, epochs),
+                 train_results, color='blue',
+                 label='Train AUC')
+        plt.plot(np.linspace(1, epochs, epochs),
+                 validation_results, color='red',
+                 label='Validation AUC')
+        plt.xlabel('Epochs')
+        plt.ylabel('AUC')
+        plt.title('Learning curves')
+        plt.legend(loc='lower right')
+        plt.show()
 
     def assesment(self, test_set, labels_indexes: int, confound_indexes: int):
         """Method for the model assesment on test set.
