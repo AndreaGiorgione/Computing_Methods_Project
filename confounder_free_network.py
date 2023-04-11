@@ -1,6 +1,6 @@
 
-'''Module containing the model for confounder free
-machine learning application.'''
+"""Module containing the model for confounder free
+machine learning application."""
 
 from pathlib import Path
 
@@ -19,7 +19,7 @@ from subnetworks import build_classificator, build_extractor, build_regressor
 from custom_loss_functions import correlation_coefficient_loss
 
 class ConfounderFreeNetwork():
-    """Deep model for a classification approach independent form biases. It is
+    """Deep model for a classification approach independent fromm biases. It is
     composed by a features extractor network, a classifator and a bias predictor.
 
     The first is a sort of autoencoder calculating a modified version of the input
@@ -33,8 +33,7 @@ class ConfounderFreeNetwork():
                  classificator_layers: int, regressor_layers: int,
                  extractor_neurons: int, classificator_neurons: int,
                  regressor_neurons: int, classificator_output_dim: int,
-                 regressor_output_dim: int, learning_rate: float,
-                 verbose=False):
+                 regressor_output_dim: int, verbose=False):
         """Network constructor.
 
         Arguments
@@ -48,7 +47,7 @@ class ConfounderFreeNetwork():
         classification_layers : int
         Number of hidden layers of the classification network.
 
-        predictor_layers : int
+        regressor_layers : int
         Number of hidden layers of the predictor network.
 
         extractor_neurons : int
@@ -57,8 +56,17 @@ class ConfounderFreeNetwork():
         classificator_neurons : int
         Number of neurons in the hidden layers of the classificator network.
 
-        predictor_neurons : int
-        Number of neurons in the hidden layers of the predictor network.
+        regressor_neurons : int
+        Number of neurons in the hidden layers of the regressor network.
+
+        classificator_output_dim : int
+        Number of output neurons in the classificator.
+
+        regressor_output_dim : int
+        Number of output neurons in the regressor.
+
+        verbose : bool
+        If True print some useful information about the model.
         """
         # Building of the subnewtworks
         self.extractor = build_extractor(input_dim, extractor_layers,
@@ -68,7 +76,7 @@ class ConfounderFreeNetwork():
                                                  classificator_neurons,
                                                  classificator_output_dim)
 
-        self.regressor = build_regressor(input_dim, regressor_layers, 
+        self.regressor = build_regressor(input_dim, regressor_layers,
                                          regressor_neurons,
                                          regressor_output_dim)
 
@@ -98,37 +106,46 @@ class ConfounderFreeNetwork():
             self.extraction_network.summary()
 
     def train(self, train_data: np.ndarray, validation_data: np.ndarray,
-              epochs: int, batch_size: int, labels_indeces: int,
-              confound_indeces: int, verbose=False):
+              epochs: int, batch_size: int, labels_indexes: int,
+              confound_indexes: int, verbose=False):
         """Method for the training of the model.
 
         Arguments
         ---------
-        dataset : np.ndarray
-        Dataset for the machine learning application (last columns must be the labels vector).
+        train_data : np.ndarray
+        Dataset for the model training (last columns must be the labels).
+
+        validation_data : np.ndarry
+        Dataset for the model validation (last columns must be the labels).
 
         epochs : int
         Number of epochs.
 
-        batch_dimension : int
+        batch_size : int
         Number of samples in every batch.
 
-        test_fraction : float
-        Percentage of the dataset for the model assesment (test set).
+        labels_indexes: int
+        Indexes of the classification labels.
+
+        confound_indexes: int
+        Indexes of the confounder variables.
+
+        verbose : bool
+        If True print the results of the regressor.
         """
 
         # Number of batches
         batches_number = int(train_data.shape[0] / batch_size)
 
         # Splitting of the data
-        train_set = train_data[:, 0:labels_indeces[0]]
-        validation_set = validation_data[:, 0:labels_indeces[0]]
+        train_set = train_data[:, 0:labels_indexes[0]]
+        validation_set = validation_data[:, 0:labels_indexes[0]]
 
-        train_labels = train_data[:, labels_indeces]
-        validation_labels = validation_data[:, labels_indeces]
+        train_labels = train_data[:, labels_indexes]
+        validation_labels = validation_data[:, labels_indexes]
 
-        train_confounders = train_data[:, confound_indeces]
-        validation_confounders = validation_data[:, confound_indeces]
+        train_confounders = train_data[:, confound_indexes]
+        validation_confounders = validation_data[:, confound_indexes]
 
         # Definition of the batches
         train_batches = np.array_split(train_set, batches_number)
@@ -179,26 +196,35 @@ class ConfounderFreeNetwork():
                 if verbose:
                     print(f'                   {pred_train_results}, {pred_validation_results}')
 
-    def assesment(self, test_data, labels_indeces: int, confound_indeces: int):
+    def assesment(self, test_set, labels_indexes: int, confound_indexes: int):
         """Method for the model assesment on test set.
-        
+
         Arguments
         ---------
         test_set : np.array
         Test set for the evalutaion phase.
+
+        labels_indexes : int
+        Indexes of the classification lables.
+
+        confound_indexes : int
+        Indexes of the confounder variables.
         """
 
-        test_set = test_data[:, 0:labels_indeces[0]]
-        test_labels = test_data[:, labels_indeces]
-        test_confounders = test_data[:, confound_indeces]
+        # Splitting the data
+        test_set = test_set[:, 0:labels_indexes[0]]
+        test_labels = test_set[:, labels_indexes]
+        test_confounders = test_set[:, confound_indexes]
 
+        # Prediction of the network
         class_test_results = self.classification_network.evaluate(test_set,
                                                                   test_labels,
                                                                   verbose=0)
         pred_test_results = self.resgression_network.evaluate(test_set,
                                                               test_confounders,
                                                               verbose=0)
-        
+
+        # Print of results
         print(f'Final assesment on test: {class_test_results}, {pred_test_results}')
 
 if __name__ == "__main__":
@@ -229,20 +255,16 @@ if __name__ == "__main__":
     parser.add_argument('-ro', type=int, metavar='', required=True,
                         help='Output dimension for the regressor.')
 
-    parser.add_argument('-e', type=int, metavar='',  required=True, 
+    parser.add_argument('-e', type=int, metavar='',  required=True,
                         help='Number of epochs.')
-    parser.add_argument('-b', type=int, metavar='',  required=True, 
+    parser.add_argument('-b', type=int, metavar='',  required=True,
                         help='Batch size.')
-    parser.add_argument('-v', type=float, metavar='', required=True,
-                        help='Validation fraction.')
     parser.add_argument('-t', type=float, metavar='', required=True,
                         help='Test fraction.')
     parser.add_argument('-l', type=int, nargs='+', metavar='', required=True,
-                        help='Labels indeces.')
+                        help='Labels indexes.')
     parser.add_argument('-c', type=int, nargs='+', metavar='', required=True,
-                        help='Cnfounders indeces.')
-    parser.add_argument('-lr', type=float, metavar='', required=True,
-                        help='Leraning rate.')
+                        help='Cnfounders indexes.')
 
     parser.add_argument('-ts', action='store_true',
                         help='Final assesment over the test set.')
@@ -262,42 +284,28 @@ if __name__ == "__main__":
     developement_data = data[:int(len(data)*(1-args.t)), :]
     test_data = data[int(len(data)*(1-args.t)):, :]
 
-    train_data = developement_data[:int(len(developement_data)*(1-args.v)), :]
-    validation_data = developement_data[int(len(developement_data)*(1-args.v)):, :]
-
-    # Prepare the model
-    model = ConfounderFreeNetwork(input_dim=(data.shape[1]-args.co), extractor_layers=args.el,
-                                  classificator_layers=args.cl, regressor_layers=args.rl,
-                                  extractor_neurons=args.en, classificator_neurons=args.cn,
-                                  regressor_neurons=args.rn, classificator_output_dim=args.co,
-                                  regressor_output_dim=args.ro, learning_rate=args.lr,
-                                  verbose=args.vr)
-
-    # Train model
-    model.train(train_data=train_data, validation_data=validation_data,
-                epochs=args.e, batch_size=args.b, labels_indeces=args.l,
-                confound_indeces=args.c, verbose=args.vr)
-
-
+    # Start of the computation time
     start = time.time()
 
     # K-Fold cross validation
-    folds_number = 4
-    kf = KFold(n_splits=folds_number, shuffle=False)
+    FOLDS = 4
+    kf = KFold(n_splits=FOLDS, shuffle=False)
     for fold, (train_index, validation_index) in enumerate(kf.split(developement_data)):
-        print(f'Fold {fold+1} of {folds_number}')
+        print(f'Fold {fold+1} of {FOLDS}')
 
+        # Prepare the model
         model = ConfounderFreeNetwork(input_dim=(data.shape[1]-args.co), extractor_layers=args.el,
                                   classificator_layers=args.cl, regressor_layers=args.rl,
                                   extractor_neurons=args.en, classificator_neurons=args.cn,
                                   regressor_neurons=args.rn, classificator_output_dim=args.co,
-                                  regressor_output_dim=args.ro, learning_rate=args.lr,
-                                  verbose=args.vr)
-        
+                                  regressor_output_dim=args.ro, verbose=args.vr)
+
+        # Training
         model.train(train_data=developement_data[train_index],
                     validation_data=developement_data[validation_index],
-                    epochs=args.e, batch_size=args.b, labels_indeces=args.l,
-                    confound_indeces=args.c, verbose=args.vr)
+                    epochs=args.e, batch_size=args.b, labels_indexes=args.l,
+                    confound_indexes=args.c, verbose=args.vr)
 
+    # End of computation time
     end = time.time()
     print(f'Total time: {round((end - start) / 60)} minutes.')

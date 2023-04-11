@@ -38,18 +38,14 @@ if __name__ == "__main__":
     parser.add_argument('-co', type=int, metavar='', required=True,
                         help='Output dimension for the classificator.')
 
-    parser.add_argument('-e', type=int, metavar='',  required=True, 
+    parser.add_argument('-e', type=int, metavar='',  required=True,
                         help='Number of epochs.')
-    parser.add_argument('-b', type=int, metavar='',  required=True, 
+    parser.add_argument('-b', type=int, metavar='',  required=True,
                         help='Batch size.')
-    parser.add_argument('-v', type=float, metavar='', required=True,
-                        help='Validation fraction.')
     parser.add_argument('-t', type=float, metavar='', required=True,
                         help='Test fraction.')
     parser.add_argument('-l', type=int, nargs='+', metavar='', required=True,
-                        help='Labels indeces.')
-    parser.add_argument('-lr', type=float, metavar='', required=True,
-                        help='Leraning rate.')
+                        help='Labels indexes.')
 
     parser.add_argument('-ts', action='store_true',
                         help='Final assesment over the test set.')
@@ -74,12 +70,12 @@ if __name__ == "__main__":
 
     test_set = test_data[:, 0:args.l[0]]
     test_labels = test_data[:, args.l]
-    
+
     # K-Fold cross validation
-    folds_number = 4
-    kf = KFold(n_splits=folds_number, shuffle=False)
+    FOLDS = 4
+    kf = KFold(n_splits=FOLDS, shuffle=False)
     for fold, (train_index, validation_index) in enumerate(kf.split(developement_data)):
-        print(f'Fold {fold+1} of {folds_number}')
+        print(f'Fold {fold+1} of {FOLDS}')
 
         # Building of the subnewtworks
         extractor = build_extractor(input_dim=(data.shape[1]-args.co),
@@ -90,7 +86,7 @@ if __name__ == "__main__":
                                 layers=args.cl,
                                 neurons=args.cn,
                                 output_dim=args.co)
-        
+
         # Prepare the model
         classification_network = Sequential()
         classification_network.add(extractor) # Trainable
@@ -98,7 +94,7 @@ if __name__ == "__main__":
         classification_network.compile(loss='binary_crossentropy',
                                        optimizer=Adam(),
                                        metrics=AUC())
-    
+
         # Training
         classification_network.fit(x=train_set[train_index],
                                    y=train_labels[train_index],
@@ -111,5 +107,5 @@ if __name__ == "__main__":
         class_test_results = classification_network.evaluate(test_set,
                                                              test_labels,
                                                              verbose=0)
-        
+
         print(f'Final assesment on test: {class_test_results}')
