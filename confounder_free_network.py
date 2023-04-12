@@ -309,6 +309,21 @@ if __name__ == "__main__":
     developement_data = data[:int(len(data)*(1-args.t)), :]
     test_data = data[int(len(data)*(1-args.t)):, :]
 
+    # If required check test performances
+    if args.ts:
+        # Prepare the model
+        model = ConfounderFreeNetwork(input_dim=(data.shape[1]-args.co), extractor_layers=args.el,
+                                  classificator_layers=args.cl, regressor_layers=args.rl,
+                                  extractor_neurons=args.en, classificator_neurons=args.cn,
+                                  regressor_neurons=args.rn, classificator_output_dim=args.co,
+                                  regressor_output_dim=args.ro, verbose=args.vr)
+
+        # Training
+        model.train(train_data=developement_data,
+                    validation_data=test_data,
+                    epochs=args.e, batch_size=args.b, labels_indexes=args.l,
+                    confound_indexes=args.c, verbose=args.vr)
+
     # Start of the computation time
     start = time.time()
 
