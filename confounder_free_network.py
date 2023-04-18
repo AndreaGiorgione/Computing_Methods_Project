@@ -201,9 +201,16 @@ class ConfounderFreeNetwork():
 
             # Show results
             if (epoch+1) % 1 == 0:
-                print(f'Epoch {epoch+1} of {epochs}: {class_train_results}, {class_validation_results}')
+                print(f'Epoch {epoch+1} of {epochs}:', end=' ')
+                print(f'loss {round(class_train_results[0], 7)}', end=' - ')
+                print(f'auc {round(class_train_results[1], 7)}', end=' - ')
+                print(f'val_loss {round(class_validation_results[0], 7)}', end=' - ')
+                print(f'val_auc {round(class_validation_results[1], 7)}')
                 if verbose:
-                    print(f'                   {pred_train_results}, {pred_validation_results}')
+                    print('                 ', end=' ')
+                    print(f'regr_loss {round(pred_train_results, 7)}', end=' - ')
+                    print(f'regr_val_loss {round(pred_validation_results, 7)}', end='')
+                print('\n')
 
         # Showing preformances
         print(f'Train AUC max and mean: {max(train_results)}, {mean(train_results)}')
