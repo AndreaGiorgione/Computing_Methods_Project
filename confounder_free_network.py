@@ -300,30 +300,33 @@ class ConfounderFreeNetwork():
 if __name__ == "__main__":
 
     # Definition of the parser for the user arguments
-    parser = argparse.ArgumentParser(description='Program for a confounder free network.',
+    parser = argparse.ArgumentParser(description='Confounder free network program.',
                                      epilog='Be sure choosen params are suited.')
+
+    parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
+                    help='Show some help information and terminate.')
 
     parser.add_argument('-dp', type=str, metavar='', required=True,
                         help='Pathname of the dataset (format xlsx).')
 
     parser.add_argument('-el', type=int, metavar='', required=True,
-                        help='Number of layers for the features extractor.')
+                        help='Number of layers of the features extractor.')
     parser.add_argument('-cl', type=int, metavar='', required=True,
-                        help='Number of layers for the classificator.')
+                        help='Number of layers of the classificator.')
     parser.add_argument('-rl', type=int, metavar='', required=True,
-                        help='Number of layers for the regressor.')
+                        help='Number of layers of the regressor.')
 
     parser.add_argument('-en', type=int, metavar='', required=True,
-                        help='Number of neurons for the features extractor.')
+                        help='Number of neurons per layer of the features extractor.')
     parser.add_argument('-cn', type=int, metavar='', required=True,
-                        help='Number of neurons for the classificator.')
+                        help='Number of neurons per layer of the classificator.')
     parser.add_argument('-rn', type=int, metavar='', required=True,
-                        help='Number of neurons for the regressor.')
+                        help='Number of neurons per layer of the regressor.')
 
     parser.add_argument('-co', type=int, metavar='', required=True,
-                        help='Output dimension for the classificator.')
+                        help='Output dimension of the classificator.')
     parser.add_argument('-ro', type=int, metavar='', required=True,
-                        help='Output dimension for the regressor.')
+                        help='Output dimension of the regressor.')
 
     parser.add_argument('-e', type=int, metavar='',  required=True,
                         help='Number of epochs.')
@@ -337,7 +340,7 @@ if __name__ == "__main__":
                         help='Confounders indexes.')
 
     parser.add_argument('-ts', action='store_true',
-                        help='Final assesment over the test set.')
+                        help='Final assesment on test.')
     parser.add_argument('-vr', action='store_true',
                         help='Print some info during the run.')
 
