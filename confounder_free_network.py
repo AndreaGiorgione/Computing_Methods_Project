@@ -301,7 +301,8 @@ if __name__ == "__main__":
 
     # Definition of the parser for the user arguments
     parser = argparse.ArgumentParser(description='Confounder free network program.',
-                                     epilog='Be sure choosen params are suited.')
+                                     epilog='Be sure choosen params are suited.',
+                                     add_help=False)
 
     parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
                     help='Show some help information and terminate.')
