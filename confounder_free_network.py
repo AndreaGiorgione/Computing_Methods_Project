@@ -334,7 +334,7 @@ if __name__ == "__main__":
     parser.add_argument('-l', type=int, nargs='+', metavar='', required=True,
                         help='Labels indexes.')
     parser.add_argument('-c', type=int, nargs='+', metavar='', required=True,
-                        help='Cnfounders indexes.')
+                        help='Confounders indexes.')
 
     parser.add_argument('-ts', action='store_true',
                         help='Final assesment over the test set.')
