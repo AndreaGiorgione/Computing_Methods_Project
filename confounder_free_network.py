@@ -4,6 +4,8 @@ machine learning application."""
 
 from pathlib import Path
 
+from statistics import mean
+
 import time
 import argparse
 import numpy as np
@@ -15,8 +17,6 @@ from keras.optimizers import Adam
 from keras.metrics import AUC
 
 from sklearn.model_selection import KFold
-
-from statistics import mean
 
 from subnetworks import build_classificator, build_extractor, build_regressor
 from custom_loss_functions import correlation_coefficient_loss
@@ -195,7 +195,7 @@ class ConfounderFreeNetwork():
             pred_validation_results = self.resgression_network.evaluate(validation_set,
                                                                         validation_confounders,
                                                                         verbose=0)
-            
+
             train_results.append(class_train_results[1])
             validation_results.append(class_validation_results[1])
 
@@ -262,7 +262,7 @@ class ConfounderFreeNetwork():
     def extracted_features(self, input_data: np.ndarray) -> np.ndarray:
         """Method for the visualization of the
         features extractor behaviour.
-        
+
         Arguments
         ---------
         input_data : npndarray
@@ -278,11 +278,11 @@ class ConfounderFreeNetwork():
         # Expolit predict method of the extractor
         modified_input = self.extractor.predict(input_data)
         return modified_input
-    
+
     def prediction(self, input_data: np.ndarray) -> np.ndarray:
         """Method for the prediction of the
         classification network on new samples
-        
+
         Arguments
         ---------
         input_data : np.ndarray
@@ -372,7 +372,7 @@ if __name__ == "__main__":
                     validation_data=test_data,
                     epochs=args.e, batch_size=args.b, labels_indexes=args.l,
                     confound_indexes=args.c, verbose=args.vr)
-        
+
         extracted_features = model.extracted_features(developement_data[[0, 4, 7], :-1])
         print(f'Raw samples: {developement_data[[0, 4, 7], :-1]}')
         print(f'Computation of the extractor: {extracted_features}')

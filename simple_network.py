@@ -4,6 +4,8 @@ connected neural network."""
 
 from pathlib import Path
 
+from statistics import mean
+
 import argparse
 import numpy as np
 import pandas as pd
@@ -15,7 +17,6 @@ from keras.metrics import AUC
 
 from sklearn.model_selection import KFold
 
-from statistics import mean
 
 from confounder_free_network import build_extractor, build_classificator
 
@@ -99,16 +100,16 @@ if __name__ == "__main__":
                                        metrics=AUC())
 
         # Training
-        history = classification_network.fit(x=train_set[train_index],
+        HISTORY = classification_network.fit(x=train_set[train_index],
                                    y=train_labels[train_index],
                                    validation_data=[train_set[validation_index],
                                                 train_labels[validation_index]],
                                    epochs=args.e, batch_size=args.b)
-        
-        print(list(history.history.keys())[1])
-        print(list(history.history.keys())[3])
-        train_results = history.history[list(history.history.keys())[1]]
-        validation_results = history.history[list(history.history.keys())[3]]
+
+        print(list(HISTORY.history.keys())[1])
+        print(list(HISTORY.history.keys())[3])
+        train_results = HISTORY.history[list(HISTORY.history.keys())[1]]
+        validation_results = HISTORY.history[list(HISTORY.history.keys())[3]]
 
         # Showing preformances
         print(f'Train AUC max and mean: {max(train_results)}, {mean(train_results)}')
