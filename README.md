@@ -27,3 +27,4 @@ In Data_preparation.mlx is defined a pipeline for the preparation of the dataset
 ## How to run he code
 To run the training of the model, user pass thanks to argparse the choosen dataset (excel format with samples corresponding to lines and fetures to columns) and the architectures of the network in terms of number of inputs, number of outputs, number of hidden layers, number of neurons for them, indexes of confounder variables and indexes of labels (dataset should have in the last part of the columns confounders and then labels). 
 ![ray-so-export](https://user-images.githubusercontent.com/113907653/232740719-8e1cccb4-b2d0-4000-b78a-384e60700d33.png)
+![ray-so-export (1)](https://user-images.githubusercontent.com/113907653/232750488-87f08404-8e10-482b-bdc6-fd9ee747dc1a.png)
