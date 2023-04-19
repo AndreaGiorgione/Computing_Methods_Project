@@ -307,37 +307,37 @@ if __name__ == "__main__":
     parser.add_argument('-h', '--help', action='help', default=argparse.SUPPRESS,
                     help='Show some help information and terminate.')
 
-    parser.add_argument('-dp', type=str, metavar='', required=True,
+    parser.add_argument('-dp', type=str, required=True,
                         help='Pathname of the dataset (format xlsx).')
 
-    parser.add_argument('-el', type=int, metavar='', required=True,
+    parser.add_argument('-el', type=int, required=True,
                         help='Number of layers of the features extractor.')
-    parser.add_argument('-cl', type=int, metavar='', required=True,
+    parser.add_argument('-cl', type=int, required=True,
                         help='Number of layers of the classificator.')
-    parser.add_argument('-rl', type=int, metavar='', required=True,
+    parser.add_argument('-rl', type=int, required=True,
                         help='Number of layers of the regressor.')
 
-    parser.add_argument('-en', type=int, metavar='', required=True,
+    parser.add_argument('-en', type=int, required=True,
                         help='Number of neurons per layer of the features extractor.')
-    parser.add_argument('-cn', type=int, metavar='', required=True,
+    parser.add_argument('-cn', type=int, required=True,
                         help='Number of neurons per layer of the classificator.')
-    parser.add_argument('-rn', type=int, metavar='', required=True,
+    parser.add_argument('-rn', type=int, required=True,
                         help='Number of neurons per layer of the regressor.')
 
-    parser.add_argument('-co', type=int, metavar='', required=True,
+    parser.add_argument('-co', type=int, required=True,
                         help='Output dimension of the classificator.')
-    parser.add_argument('-ro', type=int, metavar='', required=True,
+    parser.add_argument('-ro', type=int, required=True,
                         help='Output dimension of the regressor.')
 
-    parser.add_argument('-e', type=int, metavar='',  required=True,
+    parser.add_argument('-e', type=int,  required=True,
                         help='Number of epochs.')
-    parser.add_argument('-b', type=int, metavar='',  required=True,
+    parser.add_argument('-b', type=int,  required=True,
                         help='Batch size.')
-    parser.add_argument('-t', type=float, metavar='', required=True,
+    parser.add_argument('-t', type=float, required=True,
                         help='Test fraction.')
-    parser.add_argument('-l', type=int, nargs='+', metavar='', required=True,
+    parser.add_argument('-l', type=int, nargs='+', required=True,
                         help='Labels indexes.')
-    parser.add_argument('-c', type=int, nargs='+', metavar='', required=True,
+    parser.add_argument('-c', type=int, nargs='+', required=True,
                         help='Confounders indexes.')
 
     parser.add_argument('-ts', action='store_true',
