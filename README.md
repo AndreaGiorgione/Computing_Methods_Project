@@ -10,6 +10,9 @@ The actual implementation of the model of interest is in confounder_free_network
 ## Matlab code
 In Data_preparation.mlx is defined a pipeline for the preparation of the dataset for the machine learning implementation. It consist in outliers removal and features reduction with usage of statistical tools. In it is called the harmonizaion.py script. This generated: ABIDE_prepared_dataset.xlsx, ABIDE_harmonized_dataset.xlsx (by the Python script) and ABIDE_final_dataset.xlsx (the actual one used for the analysis). Also another file called Data_exploration.mlx is present. It is just a preliminar check over the original dataset, with a first attempt of data preparation (it is just a test file not mandatory for the application).
 
+## Documentation
+The folder Docs contains dome files about automatic generated documentation for confounder_free_network.py file. It is obtained with the pdoc package.
+
 ## Requirements
   Here a list of installed Python packages:
   - pathlib 1.0.1
@@ -19,7 +22,9 @@ In Data_preparation.mlx is defined a pipeline for the preparation of the dataset
   - keras 2.11.0
   - scikit-learn 1.2.1
   - matplotlib 3.6.0
+  - neuroHarmonize 2.2.0
   - pylint 2.15.3
+  - pdoc 13.1.0
  
   Matlab version: 
   - R2022b
